@@ -1,6 +1,9 @@
 ---
 name: vitest
-description: Use whenever you are about to run vitest — directly (`vitest`, `npx vitest`, `pnpm vitest`), via an npm script (`npm test`, `pnpm test`, `yarn test`), or any command that invokes the vitest binary. Prevents the two most common failure modes — hanging in watch mode, and burning tokens by re-running the full suite repeatedly just to re-filter its output.
+description: Use whenever you are about to run vitest — directly (`vitest`, `npx vitest`, `pnpm vitest`), via an npm script (`npm test`, `pnpm test`, `yarn test`), or any command that invokes the vitest binary. Also use when writing or editing vitest test files and you need to touch env vars, globals, or other shared state. Prevents the two most common runtime failure modes — hanging in watch mode, and burning tokens by re-running the full suite repeatedly just to re-filter its output — and the most common authoring footgun, mutating `process.env` directly across parallel workers.
+metadata:
+  author: Espen Hovlandsdal
+  version: "2026.05.01"
 ---
 
 # Running vitest efficiently
@@ -59,7 +62,26 @@ Running the entire test suite when you know which file is affected is slow and n
 
 Only widen the scope (drop the `-t`, then drop the file path) when narrow runs pass and you need to confirm nothing else regressed.
 
-## 5. Other defaults worth keeping
+## 5. Writing tests: use `vi.stubEnv` / `vi.stubGlobal`, never mutate directly
+
+Never assign to `process.env.FOO`, `import.meta.env.FOO`, or any global inside a test. Vitest runs test files in parallel workers, so direct mutations race other tests, leak across files, and silently clobber any pre-existing value you forget to restore. The stubs record prior state and restore it for you.
+
+```ts
+import { vi, afterEach, test } from "vitest";
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
+});
+
+test("reads PROJECT_ID", () => {
+  vi.stubEnv("PROJECT_ID", "abc123");
+});
+```
+
+Set `unstubEnvs: true` and `unstubGlobals: true` in `vitest.config.ts` to skip the `afterEach` entirely. For globals, prefer `vi.stubGlobal` or `vi.spyOn` over assignment.
+
+## 6. Other defaults worth keeping
 
 - **No coverage unless asked.** `--coverage` floods output. Skip it.
 - **`--bail` — default to omitting it.** The agent reporter already keeps failure output small, so a full run gives you the complete failure inventory at roughly the cost of a bailed run, and lets you fix multiple unrelated failures in one editing pass. Reflexively reaching for `--bail 1` causes the opposite of what it promises: fix one → rerun → fix next → rerun, repeated until done. That's the same re-run waste as section 3, just dressed up as "fast feedback." Only use `--bail 1` when (a) you genuinely expect all current failures to share one root cause and you want to confirm the smoke clears, or (b) a single failure is producing so much output that a full run is unreadable even with the agent reporter. Otherwise: run all, fix all, rerun once to confirm.
