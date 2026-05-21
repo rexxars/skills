@@ -1,0 +1,15 @@
+{
+  "name": "@rexxars/skills",
+  "version": "1.0.0",
+  "private": true,
+  "keywords": [],
+  "license": "MIT",
+  "author": "Espen Hovlandsdal <espen@hovlandsdal.com>",
+  "type": "module",
+  "scripts": {
+    "format": "oxfmt ."
+  },
+  "devDependencies": {
+    "oxfmt": "^0.51.0"
+  }
+}
