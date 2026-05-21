@@ -7,9 +7,16 @@
   "author": "Espen Hovlandsdal <espen@hovlandsdal.com>",
   "type": "module",
   "scripts": {
-    "format": "oxfmt ."
+    "format": "oxfmt .",
+    "validate": "node scripts/validate-skills.mjs",
+    "prepare": "simple-git-hooks"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npm run validate"
   },
   "devDependencies": {
-    "oxfmt": "^0.51.0"
+    "oxfmt": "^0.51.0",
+    "simple-git-hooks": "^2.11.1",
+    "yaml": "^2.6.1"
   }
 }
