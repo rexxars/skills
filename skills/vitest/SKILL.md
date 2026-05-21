@@ -1,6 +1,6 @@
 ---
 name: vitest
-description: Use whenever you are about to run vitest — directly (`vitest`, `npx vitest`, `pnpm vitest`), via an npm script (`npm test`, `pnpm test`, `yarn test`), or any command that invokes the vitest binary. Prevents the two most common failure modes: hanging in watch mode, and burning tokens by re-running the full suite repeatedly just to re-filter its output.
+description: Use whenever you are about to run vitest — directly (`vitest`, `npx vitest`, `pnpm vitest`), via an npm script (`npm test`, `pnpm test`, `yarn test`), or any command that invokes the vitest binary. Prevents the two most common failure modes — hanging in watch mode, and burning tokens by re-running the full suite repeatedly just to re-filter its output.
 ---
 
 # Running vitest efficiently
