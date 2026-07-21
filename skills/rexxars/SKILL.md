@@ -63,3 +63,9 @@ metadata:
 // @env node
 // @env browser
 ```
+
+---
+
+## Benchmarking
+
+- Use `mitata` for benchmarking, compare before/after changes
