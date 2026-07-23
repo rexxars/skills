@@ -14,6 +14,7 @@ metadata:
 - **Split large files**: Break files when they become large or handle too many concerns
 - **Type separation**: Always separate types and interfaces into `types.ts` or `types/*.ts`
 - **Constants extraction**: Move constants to a dedicated `constants.ts` file
+- **File extensions**: Use `.js`/`.ts` — only use `.mjs`/`.mts` when the project is not `"type": "module"`
 
 ### Runtime Environment
 
