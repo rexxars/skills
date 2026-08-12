@@ -1,74 +1,56 @@
 ---
 name: vitest
-description: Use whenever you are about to run vitest — directly (`vitest`, `npx vitest`, `pnpm vitest`), via an npm script (`npm test`, `pnpm test`, `yarn test`), or any command that invokes the vitest binary. Also use when writing or editing vitest test files and you need to touch env vars, globals, or other shared state. Prevents the two most common runtime failure modes — hanging in watch mode, and burning tokens by re-running the full suite repeatedly just to re-filter its output — and the most common authoring footgun, mutating `process.env` directly across parallel workers.
+description: Use before running vitest — `vitest`, `npx vitest`, `pnpm vitest`, `npm test`/`pnpm test`/`yarn test`, or any command that invokes the vitest binary — and when writing or editing vitest tests that touch env vars, globals, or assert on a captured error. Prevents hanging in watch mode, re-running the suite just to re-filter its output, mutating `process.env` across parallel workers, and assertions that hide the error that actually broke the test.
 metadata:
   author: Espen Hovlandsdal
-  version: "2026.05.01"
+  version: "2026.08.12"
 ---
 
 # Running vitest efficiently
 
-The goal: get a clear picture of what's failing in **one run**, with the smallest possible output, and never block on watch mode. Re-running the suite to change a grep filter is the single most wasteful pattern — it costs minutes per iteration and bloats context with output you already had a moment ago.
+Goal: the full failure picture in **one run**, with minimal output, never blocking on watch mode.
 
 ## 1. Never enter watch mode
 
-Bare `vitest` defaults to **watch mode** in a TTY and will hang the session until killed. Many `package.json` scripts are wired as `"test": "vitest"`, so `npm test` hangs too.
+Bare `vitest` watches in a TTY and hangs until killed. Scripts wired as `"test": "vitest"` mean `npm test` hangs too.
 
-- Direct invocation: `npx vitest run <args>` (the `run` subcommand is non-watch).
-- Through an npm script: `npm test -- --run` (the `--` forwards the flag to vitest). If the script does anything besides invoke vitest, prefer calling vitest directly via `npx vitest run` so you know exactly what's happening.
-- Equivalent: `vitest --run` also works if you prefer the flag form.
+- Use `npx vitest run <args>` (or `vitest --run`).
+- Via an npm script: `npm test -- --run`. If the script does more than invoke vitest, call `npx vitest run` directly so you know what's happening.
+- No output after ~10s? Assume watch mode and kill it rather than waiting.
 
-If a command appears to hang for more than ~10s with no output, assume watch mode and kill it rather than waiting.
+## 2. Use the `agent` reporter, don't grep
 
-## 2. Use the `agent` reporter — don't grep vitest output
+Vitest ≥4.1.0 auto-enables an `agent` reporter when it detects it's running inside an AI coding agent: only failed tests and their errors, no passing-test logs, no summary block.
 
-Since **vitest v4.1.0**, an `agent` reporter auto-activates when vitest detects it is running inside an AI coding agent. It prints **only failed tests and their error messages** — no console logs from passing tests, no summary block, no decorative output. This is exactly the signal you need.
+- No custom `reporters` in `vitest.config.*` → already on, just `npx vitest run <file>`.
+- Custom reporters configured → auto-detection is bypassed; force it with `--reporter=agent`.
+- Older than 4.1.0 → `--reporter=dot`, and suggest upgrading.
 
-- If the project has no custom `reporters` configured, the agent reporter is already on. Just run `npx vitest run <file>`.
-- If the project **does** configure custom reporters (check `vitest.config.*`), auto-detection is bypassed. Force it: `npx vitest run --reporter=agent <file>`.
-- Vitest is older than 4.1.0? Use `--reporter=dot` to suppress passing-test noise, and consider suggesting the user upgrade.
+Reaching for `| grep "×"`, `| grep FAIL`, or `| head -N` means the reporter is wrong. Fix the reporter instead of papering over the output.
 
-**Stop piping vitest into `grep`.** The agent reporter already filters to failures. If you find yourself reaching for `| grep "×"`, `| grep "FAIL"`, `| grep -E "Test Files|Tests "`, or `| head -N`, that's a sign you didn't use the right reporter — fix the reporter, don't paper over the output.
+## 3. Never re-run just to re-slice the output
 
-## 3. Never re-run tests just to change how you slice the output
-
-This is the cardinal sin. If you ran the suite and want a different view of the same failures, **re-read the output you already captured** — do not run the suite again.
-
-The pattern to avoid (real example, ~5 minutes wasted):
-
-```
-npx vitest run client.test.ts | grep "Test Files|Tests"   # counts
-npx vitest run client.test.ts | grep "× " | head -20      # names — RE-RAN
-npx vitest run client.test.ts -t "..."                    # one test — RE-RAN
-npx vitest run client.test.ts | grep "× " | head -15      # names again — RE-RAN
-```
-
-The fix: capture once, inspect many.
+Want a different view of the same failures? Re-read the output you already have. Capture once, inspect many:
 
 ```bash
 npx vitest run client.test.ts > /tmp/vitest.out 2>&1
-# now read /tmp/vitest.out as many times as you want with Read, grep, etc.
 ```
 
-Only re-run when something has actually changed: you edited code, you want to verify a fix, or you legitimately suspect flake. "I want to see a different subset of the same failures" is **not** a reason to re-run.
+Re-run only when something actually changed: you edited code, you're verifying a fix, or you suspect flake.
 
-## 4. Scope the run before you start
+## 4. Scope tightly from the first invocation
 
-Running the entire test suite when you know which file is affected is slow and noisy. Scope tightly from the first invocation:
+- By file: `npx vitest run path/to/foo.test.ts` — one or more paths, positional.
+- By name: `-t "regex"` matches test/describe names as a regex, so `|` is alternation.
+- Both, for the fastest signal: `npx vitest run path/to/foo.test.ts -t "handles HTTP errors"`.
 
-- **By file**: `npx vitest run path/to/foo.test.ts` — pass one or more file paths positionally.
-- **By test name**: `-t "regex"` filters by test/describe name (it's a regex, not a glob — `|` is alternation, no backslash needed).
-- **Combined**: `npx vitest run path/to/foo.test.ts -t "handles HTTP errors"` is the tightest, fastest signal.
+Widen (drop `-t`, then the path) only once the narrow runs pass.
 
-Only widen the scope (drop the `-t`, then drop the file path) when narrow runs pass and you need to confirm nothing else regressed.
+## 5. Stub env and globals, never mutate
 
-## 5. Writing tests: use `vi.stubEnv` / `vi.stubGlobal`, never mutate directly
-
-Never assign to `process.env.FOO`, `import.meta.env.FOO`, or any global inside a test. Vitest runs test files in parallel workers, so direct mutations race other tests, leak across files, and silently clobber any pre-existing value you forget to restore. The stubs record prior state and restore it for you.
+Test files run in parallel workers, so assigning `process.env.FOO`, `import.meta.env.FOO`, or any global races other tests, leaks across files, and clobbers pre-existing values. `vi.stubEnv` / `vi.stubGlobal` record and restore prior state; use `vi.spyOn` for methods.
 
 ```ts
-import { vi, afterEach, test } from "vitest";
-
 afterEach(() => {
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
@@ -79,21 +61,32 @@ test("reads PROJECT_ID", () => {
 });
 ```
 
-Set `unstubEnvs: true` and `unstubGlobals: true` in `vitest.config.ts` to skip the `afterEach` entirely. For globals, prefer `vi.stubGlobal` or `vi.spyOn` over assignment.
+`unstubEnvs: true` + `unstubGlobals: true` in `vitest.config.ts` replaces that `afterEach`.
 
-## 6. Other defaults worth keeping
+## 6. Assert on captured errors so failures stay debuggable
 
-- **No coverage unless asked.** `--coverage` floods output. Skip it.
-- **`--bail` — default to omitting it.** The agent reporter already keeps failure output small, so a full run gives you the complete failure inventory at roughly the cost of a bailed run, and lets you fix multiple unrelated failures in one editing pass. Reflexively reaching for `--bail 1` causes the opposite of what it promises: fix one → rerun → fix next → rerun, repeated until done. That's the same re-run waste as section 3, just dressed up as "fast feedback." Only use `--bail 1` when (a) you genuinely expect all current failures to share one root cause and you want to confirm the smoke clears, or (b) a single failure is producing so much output that a full run is unreadable even with the agent reporter. Otherwise: run all, fix all, rerun once to confirm.
-- **Workspace/monorepo invocations**: prefer running vitest from the package directory (`cd packages/foo && npx vitest run`) rather than orchestrating through the workspace root unless the project's scripts specifically require the root path.
+When a test captures an error instead of letting it throw — CLI helpers returning `{error, exitCode, stdout, stderr}`, or a `try`/`catch` around the call under test:
 
-## Quick reference
+- **Success tests: `if (error) throw error`.** Never `expect(error).toBeUndefined()` — it reports only "expected undefined, received Error" and throws away the message and stack that tell you what broke.
+- **Error tests: `expect(error).toBeInstanceOf(Error)`**, plus exit code and message. `toBeDefined()` passes on a stray string and proves nothing about which failure fired.
 
-| Goal                                                                   | Command                                                   |
-| ---------------------------------------------------------------------- | --------------------------------------------------------- |
-| Run a single file, fail-only output                                    | `npx vitest run path/to/foo.test.ts`                      |
-| Force agent reporter (custom reporters configured)                     | `npx vitest run --reporter=agent path/to/foo.test.ts`     |
-| Run one named test                                                     | `npx vitest run path/to/foo.test.ts -t "test name regex"` |
-| Capture full output for repeated inspection                            | `npx vitest run <args> > /tmp/vitest.out 2>&1`            |
-| Through an npm script without entering watch                           | `npm test -- --run`                                       |
-| Stop at first failure (only when failures share a root cause — see §5) | `npx vitest run --bail 1 <args>`                          |
+```ts
+test("lists datasets", async () => {
+  const {error, stdout} = await runCli(["dataset", "list"]);
+  if (error) throw error;
+  expect(stdout).toContain("production");
+});
+
+test("rejects an unknown dataset", async () => {
+  const {error, exitCode, stderr} = await runCli(["dataset", "delete", "nope"]);
+  expect(error).toBeInstanceOf(Error);
+  expect(exitCode).toBe(1);
+  expect(stderr).toContain("Dataset not found");
+});
+```
+
+## 7. Other defaults
+
+- **No `--coverage`** unless asked; it floods the output.
+- **Omit `--bail`.** The agent reporter keeps a full run's output small, so: run all → fix all → rerun once to confirm. `--bail 1` turns that into fix-one-rerun-repeat, the same waste as §3. Use it only when you expect every failure to share one root cause, or when a single failure's output drowns the run.
+- **Monorepos**: run from the package directory (`cd packages/foo && npx vitest run`) unless the project's scripts require the root.
