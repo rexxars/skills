@@ -8,7 +8,7 @@
   "type": "module",
   "scripts": {
     "format": "oxfmt .",
-    "validate": "node scripts/validate-skills.mjs",
+    "validate": "node scripts/validate-skills.js",
     "prepare": "simple-git-hooks"
   },
   "simple-git-hooks": {
