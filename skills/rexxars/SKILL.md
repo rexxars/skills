@@ -14,7 +14,7 @@ metadata:
 - **Split large files**: Break files when they become large or handle too many concerns
 - **Type separation**: Always separate types and interfaces into `types.ts` or `types/*.ts`
 - **Constants extraction**: Move constants to a dedicated `constants.ts` file
-- **File extensions**: Use `.js`/`.ts` — only use `.mjs`/`.mts` when the project is not `"type": "module"`
+- **File extensions**: Use `.js`/`.ts` - only use `.mjs`/`.mts` when the project is not `"type": "module"`
 
 ### Runtime Environment
 
@@ -46,7 +46,7 @@ metadata:
 
 ### Testing (Vitest)
 
-- In success tests, use `if (error) throw error` — NOT `expect(error).toBeUndefined()`. It gives better stack traces on failure.
+- In success tests, use `if (error) throw error` - NOT `expect(error).toBeUndefined()`. It gives better stack traces on failure.
 - Use `describe` + `test` API (not `it`), imported from `vitest` explicitly
 - Use `toMatchSnapshot` for complex outputs
 
@@ -69,4 +69,4 @@ metadata:
 
 ## Benchmarking
 
-- Use `mitata` for benchmarking, compare before/after changes
+- When asked to benchmark javascript, use `mitata` package. Compare before/after changes.
