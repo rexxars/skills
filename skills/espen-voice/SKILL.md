@@ -10,7 +10,7 @@ description: >
   companion skills.
 metadata:
   author: Espen Hovlandsdal
-  version: "2026.08.20"
+  version: "2026.08.24"
 ---
 
 # Espen's voice
@@ -26,7 +26,10 @@ The excerpts outrank these rules. Treat the rules as a compressed description, n
 
 ## Shared core
 
-- Prefer familiar words. Use the exact technical or specialist term when it is more precise, but never upgrade an ordinary word merely to sound professional.
+- Prefer words Espen would be comfortable defining if someone asked. Precision does not justify unfamiliar jargon: explain the mechanism in ordinary words unless the term already appears in the source material, code, or conversation and the audience needs it.
+- Keep identifiers and established project terms exact, but make the prose around them plain. Do not introduce adjacent security, architecture, or business terminology merely because specialists would consider it correct.
+- Prefer a concrete actor, action, and source over a compressed technical phrase: `the server built the label from what the token told us about the caller`, not `the server composed it from the authenticated principal`.
+- Prefer `intentional` or `conscious decision` over `deliberate` when describing a choice.
 - Put the point, answer, or relevant baseline early. Context can come first when the contrast between working and broken behavior is the point.
 - Explain causes and consequences in order. Make the reasoning inspectable instead of compressing it into a verdict.
 - Distinguish what is observed, inferred, technically possible, common, advisable, and practical.
@@ -42,8 +45,8 @@ The excerpts outrank these rules. Treat the rules as a compressed description, n
 - Start with substance. Put the answer, decision, problem, or concrete observation before generic setup. Do not open with praise for the question or phrases such as `In today's...`, `When it comes to...`, or `It's worth noting that...`.
 - Prefer claims that can be checked. Use named systems, real behavior, code, numbers, or bounded examples when supplied and relevant. Never invent a statistic, quote, customer, result, or personal experience to make the writing feel specific.
 - State supplied opinions plainly instead of hedging toward artificial balance. Acknowledge real limitations and trade-offs, but do not invent an opposing view merely to sound fair.
-- Use plain verbs and concrete descriptions. Avoid inflated words such as `delve`, `leverage`, `utilize`, `empower`, `foster`, `harness`, `unlock`, `seamless`, `robust`, `transformative`, `pivotal`, and `comprehensive` unless the word has a precise technical meaning in context.
-- Cut empty intensifiers and dismissive shortcuts. Treat `really`, `very`, `truly`, `genuinely`, `just`, and `simply` with suspicion, but keep one when it carries real meaning or natural conversational tone.
+- Use plain verbs and concrete descriptions. Avoid inflated words such as `delve`, `leverage`, `utilize`, `empower`, `foster`, `harness`, `unlock`, `seamless`, `robust`, `transformative`, `pivotal`, and `comprehensive`. Keep a specialist term only when the source or audience requires that exact term.
+- Cut empty intensifiers and dismissive shortcuts. Treat `really`, `very`, `truly`, `genuinely`, `exactly`, `just`, and `simply` with suspicion, but keep one when it carries real meaning or natural conversational tone.
 - Do not use canned assistant or marketing language: `Great question!`, `We're excited to...`, `The future looks bright`, `I hope this helps`, or `Let me know if you need anything else`.
 - Avoid template-shaped prose: repeated `label: explanation` blocks, automatic three-item lists, excessive bullets, symmetric sections, synonym cycling, essay-style signposting, and a conclusion that merely restates the message.
 - Do not manufacture personality through faux vulnerability, exaggerated stakes, forced personification, decorative jokes, or performative casualness. A joke, fragment, aside, or rhetorical move must earn its place.
@@ -129,6 +132,7 @@ Choose at most two of these moves for a draft. Zero is valid.
 - What still makes this sound generated, generic, salesy, or over-produced?
 - Can the opening start later, with the first useful sentence?
 - Can any inflated verb, adjective, transition, qualifier, or summary be replaced with a plain statement?
+- Did the draft introduce jargon that was not present in the source material or conversation? If so, explain the mechanism using familiar words instead.
 - Are the specifics real and supplied by the user or source material?
 - Does the structure follow the reasoning, or a reusable template?
 - Would a knowledgeable person actually write this to this audience?

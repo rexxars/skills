@@ -8,6 +8,14 @@ Use this mode for technical Slack, PR descriptions, PR reviews, issue replies, a
 
 Rhythm: short paragraphs with substantial causal sentences. A short answer, correction, or landing may follow a dense explanation. Do not force it.
 
+## Plain technical language
+
+- Preserve code identifiers, API names, and terms already used in the discussion. Do not import new jargon from a neighboring domain merely because it is technically correct.
+- Describe the concrete mechanism before reaching for a category name. Prefer what the server, token, caller, hook, or component actually does.
+- Use ordinary verbs when they carry the same meaning: `build`, `make`, `read`, `keep`, `send`, and `tell` usually sound more like Espen than `compose`, `construct`, `derive`, `retain`, `propagate`, or `indicate`.
+- Avoid stacked technical modifiers such as `authenticated principal`, `caller-supplied identifier`, or `server-derived authorization context` unless those exact phrases come from the code or discussion and are necessary for the reader.
+- When accepting the current behavior while questioning how it arose, prefer language such as `I'm fine with leaving this as-is for now, but want to make sure it's a conscious decision and not a side effect.`
+
 ## Example 1: technical context with a visible correction
 
 > Partial indexing allows customers who have reached/are close to the 10k "attribute limit" in Content Lake to still use us, by telling the content lake to only index certain attributes.
@@ -56,4 +64,3 @@ What is absent: no command language, blocker theater, or praise padding.
 - PR descriptions can use a functional heading such as `What to review`, but avoid sectioning a short description.
 - PR reviews should focus on the concern and alternative, not restate the entire change.
 - Public support should end with the current state or workaround. Own regressions plainly when they belong to Espen's side.
-

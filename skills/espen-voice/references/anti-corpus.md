@@ -24,8 +24,8 @@ How produced: deliberately generated pastiche with no corpus language.
 
 - Never use em dashes.
 - Never replace an ordinary word with a more formal synonym solely for polish.
+- Never introduce an unfamiliar technical term solely for precision or compression. Explain the mechanism in familiar words instead.
 - Never invent a hedge, joke, emotional stake, personal history, or certainty.
 - Never manufacture grammar errors, calques, or typos.
 - Never make every paragraph follow the same rhetorical shape.
 - Never use more than two signature moves in one draft.
-
