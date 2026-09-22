@@ -58,12 +58,20 @@ metadata:
 - **tsdown**: Use `tsdown` for bundling libraries, unless in `@sanity/*` scopes where `@sanity/pkg-utils` is preferred.
 - **TypeScript** with erasable syntax only, strict mode.
 - **Isomorphic code**: Write runtime-agnostic code that works in Node, browser, and workers whenever possible.
+- **Prefer pnpm** for package management
 - **Clear runtime indicators**: When code is environment-specific, add a comment at the top of the file:
 
 ```
 // @env node
 // @env browser
 ```
+
+---
+
+## Library publishing
+
+- Use changesets for publishing new libraries
+- Enable provenance and trusted publishing through GitHub for publishing. pnpm might require `--provenance`.
 
 ---
 
